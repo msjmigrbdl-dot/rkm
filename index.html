@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>APLIKASI RKM</title>
+<meta name="theme-color" content="#1565c0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RKM">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>
+  /* ======================================================
+     GANTI LINK DI BAWAH dengan link Web App Apps Script
+     (Deploy > Manage deployments > salin "Web app URL", yang berakhiran /exec)
+     ====================================================== */
+  var APP_URL = 'TEMPEL_LINK_EXEC_DI_SINI';
+</script>
+<style>
+  html,body{margin:0;height:100%;background:#1565c0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#f3f5f8}
+  #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#1565c0;color:#fff;z-index:2;transition:opacity .35s}
+  #splash img{width:96px;height:96px;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+  #splash .t{font-weight:700;font-size:18px;letter-spacing:.3px}
+  #splash .s{font-size:13px;opacity:.85;text-align:center;padding:0 24px;max-width:360px}
+  .spin{width:28px;height:28px;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:r 1s linear infinite}
+  @keyframes r{to{transform:rotate(360deg)}}
+  .btn{display:none;margin-top:4px;background:#fff;color:#1565c0;border:0;border-radius:10px;padding:10px 18px;font-weight:700;font-size:14px;text-decoration:none}
+  .hide{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="splash">
+  <img src="icon-512.png" alt="">
+  <div class="t">APLIKASI RKM</div>
+  <div class="spin" id="spin"></div>
+  <div class="s" id="msg">Memuat aplikasi…</div>
+  <a class="btn" id="retry" href="#" onclick="location.reload();return false">Coba lagi</a>
+  <a class="btn" id="ext" target="_blank" rel="noopener">Buka di browser</a>
+</div>
+<iframe id="app" title="APLIKASI RKM"
+  allow="geolocation *; camera *; microphone *; clipboard-read *; clipboard-write *; web-share *; fullscreen *"
+  allowfullscreen></iframe>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+(function(){
+  var splash = document.getElementById('splash'), msg = document.getElementById('msg'),
+      spin = document.getElementById('spin'), retry = document.getElementById('retry'),
+      ext = document.getElementById('ext'), frame = document.getElementById('app');
+  function fail(text, showExt){
+    spin.style.display = 'none'; msg.textContent = text;
+    retry.style.display = 'inline-block';
+    if (showExt && /^https:/.test(APP_URL)) { ext.href = APP_URL; ext.style.display = 'inline-block'; }
+  }
+  if (!/^https:\/\/script\.google\.com\/.+\/exec/.test(APP_URL)) {
+    fail('Link aplikasi belum diisi. Edit file index.html, isi APP_URL dengan link /exec dari Apps Script.', false);
+    retry.style.display = 'none'; return;
+  }
+  if (!navigator.onLine) { fail('Tidak ada koneksi internet. Sambungkan data / WiFi lalu coba lagi.', false); }
+  window.addEventListener('online', function(){ if (!frame.src) location.reload(); });
+  frame.onload = function(){ splash.classList.add('hide'); setTimeout(function(){ splash.style.display='none'; }, 400); };
+  var slow = setTimeout(function(){
+    msg.textContent = 'Koneksi lambat, masih memuat… Jika tidak muncul juga, tekan "Buka di browser".';
+    ext.href = APP_URL; ext.style.display = 'inline-block';
+  }, 20000);
+  frame.addEventListener('load', function(){ clearTimeout(slow); });
+  if (navigator.onLine) frame.src = APP_URL;
+
+})();
+</script>
+</body>
+</html>
